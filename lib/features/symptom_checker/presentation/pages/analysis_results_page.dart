@@ -10,7 +10,7 @@ class AnalysisResultsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Resultados del análisis'),
-        automaticallyImplyLeading: false, // No hay botón de "atrás"
+        automaticallyImplyLeading: true,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -32,7 +32,6 @@ class AnalysisResultsPage extends StatelessWidget {
                         context.pop();
                       },
                       child: const Text('Nuevo Análisis'),
-                      // El estilo primario ya está en el tema
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -42,7 +41,7 @@ class AnalysisResultsPage extends StatelessWidget {
                         context.go('/home');
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[600], // Botón secundario
+                        backgroundColor: Colors.grey[600],
                         foregroundColor: Colors.white,
                       ),
                       child: const Text('Volver al inicio'),

@@ -1,4 +1,3 @@
-// lib/core/router/app_router.dart
 import 'package:go_router/go_router.dart';
 import 'package:saludxchiapas_frontend/features/auth/presentation/pages/login_page.dart';
 import 'package:saludxchiapas_frontend/features/auth/presentation/pages/register_page.dart';

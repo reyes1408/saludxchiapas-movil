@@ -1,4 +1,3 @@
-// lib/features/home/presentation/pages/home_page.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -14,6 +13,7 @@ class HomePage extends StatelessWidget {
         title: const Text('JuntosXSalud'),
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
+        automaticallyImplyLeading: true,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -62,10 +62,9 @@ class HomePage extends StatelessWidget {
               // Card de Hospitales
               _buildLinkCard(
                 title: 'Hospitales públicos cercanos',
-                linkText:
-                    'Conoce más acerca de Puente Salud', // El texto es el mismo en la imagen
+                linkText: 'Conoce más acerca de Puente Salud',
                 onPressed: () {
-                  // TODO: Navegar a "Hospitales"
+                  // Navegar a "Hospitales" (Vista faltante)
                 },
               ),
               const SizedBox(height: 24),

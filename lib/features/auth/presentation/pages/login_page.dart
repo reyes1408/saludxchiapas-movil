@@ -1,4 +1,3 @@
-// lib/features/auth/presentation/pages/login_page.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,8 +6,7 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Definimos un color primario que se parece al de la imagen
-    final Color primaryColor = Color(0xFF006A7A); // Un tono de verde azulado
+    final Color primaryColor = Color(0xFF006A7A);
 
     return Scaffold(
       appBar: AppBar(
@@ -40,7 +38,6 @@ class LoginPage extends StatelessWidget {
                 style: TextStyle(fontSize: 16, color: Colors.black54),
               ),
               const SizedBox(height: 40),
-              // Campo de Usuario
               TextFormField(
                 decoration: const InputDecoration(
                   labelText: 'Usuario / Correo',
@@ -50,7 +47,6 @@ class LoginPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              // Campo de Contraseña
               TextFormField(
                 obscureText: true,
                 decoration: const InputDecoration(
@@ -61,7 +57,6 @@ class LoginPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              // Botón de Iniciar Sesión
               ElevatedButton(
                 onPressed: () {
                   context.go('/home');
@@ -71,9 +66,7 @@ class LoginPage extends StatelessWidget {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                      30,
-                    ), // Bordes redondeados
+                    borderRadius: BorderRadius.circular(30),
                   ),
                 ),
                 child: const Text(
@@ -82,7 +75,6 @@ class LoginPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              // Link de Registro
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -105,7 +97,7 @@ class LoginPage extends StatelessWidget {
           ),
         ),
       ),
-      backgroundColor: Colors.grey[100], // Un fondo ligeramente gris
+      backgroundColor: Colors.grey[100],
     );
   }
 }

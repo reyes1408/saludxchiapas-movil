@@ -1,4 +1,3 @@
-// lib/features/auth/presentation/pages/register_page.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -21,6 +20,7 @@ class _RegisterPageState extends State<RegisterPage> {
         title: const Text('JuntosXSalud'),
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
+        automaticallyImplyLeading: true,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -42,7 +42,6 @@ class _RegisterPageState extends State<RegisterPage> {
                 style: TextStyle(fontSize: 16, color: Colors.black54),
               ),
               const SizedBox(height: 24),
-              // Fila de Nombre y Género
               Row(
                 children: [
                   Expanded(child: _buildTextField(label: 'Nombre')),
@@ -51,7 +50,6 @@ class _RegisterPageState extends State<RegisterPage> {
                 ],
               ),
               const SizedBox(height: 16),
-              // Fila de Edad y Peso
               Row(
                 children: [
                   Expanded(
@@ -92,14 +90,12 @@ class _RegisterPageState extends State<RegisterPage> {
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                // Nota: La imagen dice "Iniciar sesión", pero debería decir "Registrarse"
                 child: const Text(
                   'Registrarse',
                   style: TextStyle(fontSize: 18),
                 ),
               ),
               const SizedBox(height: 24),
-              // Link de Login
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -107,7 +103,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   TextButton(
                     onPressed: () {
                       context.go('/');
-                      // p.ej. Navigator.of(context).pop();
                     },
                     child: Text(
                       'Inicia sesión',
