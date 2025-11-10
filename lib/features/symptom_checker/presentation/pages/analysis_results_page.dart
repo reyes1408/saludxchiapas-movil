@@ -1,12 +1,37 @@
 // lib/features/symptom_checker/presentation/pages/analysis_results_page.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:saludxchiapas_frontend/features/symptom_checker/domain/entities/analysis_result.dart';
+import 'package:saludxchiapas_frontend/features/symptom_checker/presentation/providers/symptom_provider.dart';
 
-class AnalysisResultsPage extends StatelessWidget {
+class AnalysisResultsPage extends ConsumerWidget {
   const AnalysisResultsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final symptomState = ref.watch(symptomProvider);
+    final AnalysisResult? result = symptomState.result;
+
+    if (result == null) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('No se ha encontrado ningún resultado.'),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => context.go('/home'),
+                child: const Text('Volver al inicio'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Resultados del análisis'),
@@ -18,11 +43,11 @@ class AnalysisResultsPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildGeneralSymptomsCard(context),
+              _buildGeneralSymptomsCard(context, result),
               const SizedBox(height: 16),
-              _buildRecommendationsCard(context),
+              _buildRecommendationsCard(context, result),
               const SizedBox(height: 16),
-              _buildReportedSymptomsCard(context),
+              _buildReportedSymptomsCard(context, result),
               const SizedBox(height: 32),
               Row(
                 children: [
@@ -57,7 +82,12 @@ class AnalysisResultsPage extends StatelessWidget {
   }
 
   // Card para Síntomas Generales
-  Widget _buildGeneralSymptomsCard(BuildContext context) {
+  Widget _buildGeneralSymptomsCard(
+    BuildContext context,
+    AnalysisResult result,
+  ) {
+    final (urgencyText, urgencyColor) = _getUrgencyInfo(result.nivelUrgencia);
+
     return Card(
       elevation: 2,
       child: Padding(
@@ -68,12 +98,15 @@ class AnalysisResultsPage extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Síntomas generales',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).primaryColor,
+                // 9. Usamos el dato de la API
+                Expanded(
+                  child: Text(
+                    result.diagnosticoProbable,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).primaryColor,
+                    ),
                   ),
                 ),
                 Container(
@@ -82,28 +115,23 @@ class AnalysisResultsPage extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.yellow[200],
+                    color: urgencyColor.shade100,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    'Urgencia Media',
+                    urgencyText,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.orange.shade900,
+                      color: urgencyColor.shade900,
                       fontSize: 12,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Presentas síntomas que podría ser Dengue, te recomiendo que acudas a un médico en cuanto puedas.',
-              style: TextStyle(fontSize: 16, height: 1.4),
-            ),
-            const SizedBox(height: 16),
+            const Divider(height: 24),
             Text(
-              'Confianza del análisis: 75%',
+              'Confianza del análisis: ${result.confianza.toStringAsFixed(0)}%',
               style: TextStyle(
                 color: Colors.grey[600],
                 fontStyle: FontStyle.italic,
@@ -116,7 +144,10 @@ class AnalysisResultsPage extends StatelessWidget {
   }
 
   // Card para Recomendaciones
-  Widget _buildRecommendationsCard(BuildContext context) {
+  Widget _buildRecommendationsCard(
+    BuildContext context,
+    AnalysisResult result,
+  ) {
     return Card(
       elevation: 2,
       child: Padding(
@@ -133,36 +164,21 @@ class AnalysisResultsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            _buildRecommendationItem(
-              '1',
-              'Visita un centro de salud para evaluación',
+            Text(
+              result.recomendacionPublica,
+              style: const TextStyle(fontSize: 16, height: 1.4),
             ),
-            _buildRecommendationItem('2', 'Mantente hidratado'),
-            _buildRecommendationItem('3', 'Evita el contacto con mosquitos'),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildRecommendationItem(String number, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '$number. ',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          Expanded(child: Text(text, style: const TextStyle(fontSize: 16))),
-        ],
-      ),
-    );
-  }
-
   // Card para Síntomas Reportados
-  Widget _buildReportedSymptomsCard(BuildContext context) {
+  Widget _buildReportedSymptomsCard(
+    BuildContext context,
+    AnalysisResult result,
+  ) {
     return Card(
       elevation: 2,
       child: Padding(
@@ -179,13 +195,51 @@ class AnalysisResultsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Chip(
-              label: const Text('Tengo calentura y dolor de cabeza'),
-              backgroundColor: Colors.grey[200],
+
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 4.0,
+              children: result.sintomasReportados
+                  .map(
+                    (sintoma) => Chip(
+                      label: Text(sintoma),
+                      backgroundColor: Colors.grey[200],
+                    ),
+                  )
+                  .toList(),
             ),
+
+            if (result.textoOriginal.isNotEmpty &&
+                !result.sintomasReportados.contains(result.textoOriginal))
+              Padding(
+                padding: const EdgeInsets.only(top: 12.0),
+                child: Text(
+                  'Texto original: "${result.textoOriginal}"',
+                  style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ),
           ],
         ),
       ),
     );
+  }
+
+  // Helper para mapear el nivel de urgencia a un color y texto
+  (String, MaterialColor) _getUrgencyInfo(String nivelUrgencia) {
+    switch (nivelUrgencia.toLowerCase()) {
+      case 'alto':
+      case 'alta':
+        return ('Urgencia Alta', Colors.red);
+      case 'media':
+      case 'medio':
+        return ('Urgencia Media', Colors.orange);
+      case 'bajo':
+      case 'baja':
+      default:
+        return ('Urgencia Baja', Colors.green);
+    }
   }
 }

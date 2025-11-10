@@ -44,7 +44,7 @@ class HomePage extends StatelessWidget {
                 buttonText: 'COMENZAR',
                 buttonColor: primaryColor,
                 onPressed: () {
-                  context.go('/symptom-checker');
+                  context.push('/symptom-checker');
                 },
               ),
               const SizedBox(height: 16),
@@ -54,7 +54,7 @@ class HomePage extends StatelessWidget {
                 title: 'Sobre nosotros',
                 linkText: 'Conoce más acerca de Puente Salud',
                 onPressed: () {
-                  context.go('/about');
+                  context.push('/about');
                 },
               ),
               const SizedBox(height: 16),

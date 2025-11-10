@@ -2,7 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:saludxchiapas_frontend/core/errors/exceptions.dart';
 import 'package:saludxchiapas_frontend/features/symptom_checker/data/models/analysis_result_model.dart';
 
-const String _BASE_URL = 'http://10.0.2.2:8000';
+const String _BASE_URL =
+    'https://untransfigured-tabetha-mockingly.ngrok-free.dev';
 
 abstract class SymptomRemoteDataSource {
   Future<AnalysisResultModel> analyzeSymptoms(String texto);
