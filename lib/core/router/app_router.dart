@@ -5,6 +5,7 @@ import 'package:saludxchiapas_frontend/features/home/presentation/pages/home_pag
 import 'package:saludxchiapas_frontend/features/about/presentation/pages/about_us_page.dart';
 import 'package:saludxchiapas_frontend/features/symptom_checker/presentation/pages/analysis_results_page.dart';
 import 'package:saludxchiapas_frontend/features/symptom_checker/presentation/pages/symptom_checker_page.dart';
+import 'package:saludxchiapas_frontend/features/hospitals/presentation/pages/hospitals_page.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -41,6 +42,11 @@ final appRouter = GoRouter(
       path: '/about',
       name: 'about',
       builder: (context, state) => const AboutUsPage(),
+    ),
+    GoRoute(
+      path: '/hospitals',
+      name: 'hospitals',
+      builder: (context, state) => const HospitalsPage(),
     ),
   ],
 );

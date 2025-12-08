@@ -12,11 +12,11 @@ class AnalysisResultModel extends AnalysisResult {
 
   factory AnalysisResultModel.fromJson(Map<String, dynamic> json) {
     return AnalysisResultModel(
-      diagnosticoProbable: json['diagnostico_probable'] ?? 'Error',
+      diagnosticoProbable: json['diagnostico'] ?? 'Error',
       confianza: (json['confianza'] as num?)?.toDouble() ?? 0.0,
       nivelUrgencia: json['nivel_urgencia'] ?? 'Bajo',
-      recomendacionPublica: json['recomendacion_publica'] ?? 'Error',
-      sintomasReportados: List<String>.from(json['sintomas_reportados'] ?? []),
+      recomendacionPublica: json['recomendacion'] ?? 'Error',
+      sintomasReportados: List<String>.from(json['sintomas_detectados'] ?? []),
       textoOriginal: json['texto_original'] ?? '',
     );
   }

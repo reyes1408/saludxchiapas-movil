@@ -11,13 +11,28 @@ class SymptomRepositoryImpl implements SymptomRepository {
   SymptomRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, AnalysisResult>> analyzeSymptoms(String texto) async {
+  Future<Either<Failure, AnalysisResult>> diagnose({
+    required String texto,
+    required String municipio,
+    required String genero,
+    required int edad,
+    required double peso,
+  }) async {
     try {
-      final resultModel = await remoteDataSource.analyzeSymptoms(texto);
-      return Right(resultModel);
+      final result = await remoteDataSource.diagnose(
+        texto: texto,
+        municipio: municipio,
+        genero: genero,
+        edad: edad,
+        peso: peso,
+      );
+      return Right(result);
     } on ServerException {
-      return Left(ServerFailure('Error al conectar con el servidor.'));
+      return const Left(
+        ServerFailure('Error al conectar con el servidor de diagnóstico.'),
+      );
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
     }
-    // manejar excepciones.
   }
 }

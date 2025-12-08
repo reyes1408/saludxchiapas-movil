@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:saludxchiapas_frontend/features/symptom_checker/presentation/providers/symptom_provider.dart';
+import 'package:saludxchiapas_frontend/core/constants/municipios_chiapas.dart';
 
 class SymptomCheckerPage extends ConsumerStatefulWidget {
   const SymptomCheckerPage({super.key});
@@ -21,12 +22,12 @@ class _SymptomCheckerPageState extends ConsumerState<SymptomCheckerPage> {
     final symptomState = ref.watch(symptomProvider);
     final symptomNotifier = ref.read(symptomProvider.notifier);
 
+    // Escuchar cambios de estado para navegación o errores
     ref.listen(symptomProvider, (previous, next) {
       if (next.result != null) {
-        context.go('/symptom-checker/results');
+        context.push('/symptom-checker/results');
       }
       if (next.errorMessage != null) {
-        // ¡Error! Muestra un SnackBar
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.errorMessage!),
@@ -82,23 +83,17 @@ class _SymptomCheckerPageState extends ConsumerState<SymptomCheckerPage> {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 8),
+
               DropdownButtonFormField<String>(
                 value: _selectedMunicipio,
                 hint: const Text('Seleccionar'),
-                items:
-                    [
-                      // Estados.
-                      'Tuxtla Gutiérrez',
-                      'Chiapa de Corzo',
-                      'San Cristóbal de Las Casas',
-                      'Comitán de Domínguez',
-                      'Tapachula',
-                    ].map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
+                isExpanded: true,
+                items: municipiosChiapas.map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
                 onChanged: (newValue) {
                   setState(() {
                     _selectedMunicipio = newValue;
@@ -110,14 +105,13 @@ class _SymptomCheckerPageState extends ConsumerState<SymptomCheckerPage> {
                   fillColor: Colors.white,
                 ),
               ),
+
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed:
-                    symptomState
-                        .isLoading // Deshabilita si está cargando
+                onPressed: symptomState.isLoading
                     ? null
                     : () {
-                        // Valida que el texto no esté vacío
+                        // 1. Validar Texto
                         if (_symptomsController.text.trim().isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -126,9 +120,23 @@ class _SymptomCheckerPageState extends ConsumerState<SymptomCheckerPage> {
                           );
                           return;
                         }
-                        // Llama al provider
+
+                        // 2. Validar Municipio (NUEVO)
+                        if (_selectedMunicipio == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Por favor, selecciona un municipio',
+                              ),
+                            ),
+                          );
+                          return;
+                        }
+
+                        // 3. Llamar al provider con AMBOS argumentos
                         symptomNotifier.analyzeSymptoms(
                           _symptomsController.text,
+                          _selectedMunicipio!, // Pasamos el municipio validado
                         );
                       },
                 style: ElevatedButton.styleFrom(
@@ -147,7 +155,6 @@ class _SymptomCheckerPageState extends ConsumerState<SymptomCheckerPage> {
     );
   }
 
-  // Helper para los links de ejemplo
   Widget _buildExampleLink(String text) {
     return TextButton(
       style: TextButton.styleFrom(
@@ -167,7 +174,6 @@ class _SymptomCheckerPageState extends ConsumerState<SymptomCheckerPage> {
     );
   }
 
-  // Helper para la caja de aviso
   Widget _buildWarningBox() {
     return Container(
       padding: const EdgeInsets.all(16.0),

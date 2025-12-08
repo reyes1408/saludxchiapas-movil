@@ -1,32 +1,46 @@
-// lib/features/symptom_checker/presentation/pages/analysis_results_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:saludxchiapas_frontend/features/symptom_checker/domain/entities/analysis_result.dart';
 import 'package:saludxchiapas_frontend/features/symptom_checker/presentation/providers/symptom_provider.dart';
+import 'package:saludxchiapas_frontend/features/hospitals/presentation/providers/hospitals_provider.dart';
+import 'package:saludxchiapas_frontend/features/hospitals/data/models/hospital_model.dart';
 
-class AnalysisResultsPage extends ConsumerWidget {
+class AnalysisResultsPage extends ConsumerStatefulWidget {
   const AnalysisResultsPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AnalysisResultsPage> createState() =>
+      _AnalysisResultsPageState();
+}
+
+class _AnalysisResultsPageState extends ConsumerState<AnalysisResultsPage> {
+  @override
+  void initState() {
+    super.initState();
+    final municipio = ref.read(symptomProvider).lastMunicipio;
+
+    if (municipio != null) {
+      Future.microtask(() {
+        ref.read(hospitalsProvider.notifier).searchHospitals(municipio);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final symptomState = ref.watch(symptomProvider);
+    final hospitalsState = ref.watch(hospitalsProvider);
+
     final AnalysisResult? result = symptomState.result;
 
     if (result == null) {
       return Scaffold(
         appBar: AppBar(),
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('No se ha encontrado ningún resultado.'),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () => context.go('/home'),
-                child: const Text('Volver al inicio'),
-              ),
-            ],
+          child: ElevatedButton(
+            onPressed: () => context.go('/home'),
+            child: const Text('Volver al inicio'),
           ),
         ),
       );
@@ -35,7 +49,7 @@ class AnalysisResultsPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Resultados del análisis'),
-        automaticallyImplyLeading: true,
+        automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -48,28 +62,56 @@ class AnalysisResultsPage extends ConsumerWidget {
               _buildRecommendationsCard(context, result),
               const SizedBox(height: 16),
               _buildReportedSymptomsCard(context, result),
+
+              const Divider(height: 40, thickness: 2),
+
+              Text(
+                'Atención médica en ${symptomState.lastMunicipio ?? "tu zona"}',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              if (hospitalsState.isLoading)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              else if (hospitalsState.hospitals.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    "No encontramos hospitales públicos registrados en este municipio.",
+                  ),
+                )
+              else
+                _buildMiniHospitalList(hospitalsState.hospitals),
+
+              // ----------------------------------------
               const SizedBox(height: 32),
+
               Row(
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        context.pop();
-                      },
+                      onPressed: () => context.pop(),
                       child: const Text('Nuevo Análisis'),
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        context.go('/home');
-                      },
+                      onPressed: () => context.go('/home'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.grey[600],
                         foregroundColor: Colors.white,
                       ),
-                      child: const Text('Volver al inicio'),
+                      child: const Text('Ir al Inicio'),
                     ),
                   ),
                 ],
@@ -81,13 +123,34 @@ class AnalysisResultsPage extends ConsumerWidget {
     );
   }
 
-  // Card para Síntomas Generales
+  Widget _buildMiniHospitalList(List<HospitalModel> hospitals) {
+    final topHospitals = hospitals.take(3).toList();
+
+    return Column(
+      children: topHospitals.map((hospital) {
+        return Card(
+          elevation: 1,
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            leading: Icon(Icons.local_hospital, color: Colors.red[400]),
+            title: Text(
+              hospital.nombre,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(hospital.direccion),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {},
+          ),
+        );
+      }).toList(),
+    );
+  }
+
   Widget _buildGeneralSymptomsCard(
     BuildContext context,
     AnalysisResult result,
   ) {
     final (urgencyText, urgencyColor) = _getUrgencyInfo(result.nivelUrgencia);
-
     return Card(
       elevation: 2,
       child: Padding(
@@ -96,9 +159,7 @@ class AnalysisResultsPage extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // 9. Usamos el dato de la API
                 Expanded(
                   child: Text(
                     result.diagnosticoProbable,
@@ -129,9 +190,9 @@ class AnalysisResultsPage extends ConsumerWidget {
                 ),
               ],
             ),
-            const Divider(height: 24),
+            const SizedBox(height: 8),
             Text(
-              'Confianza del análisis: ${result.confianza.toStringAsFixed(0)}%',
+              'Confianza: ${result.confianza.toStringAsFixed(0)}%',
               style: TextStyle(
                 color: Colors.grey[600],
                 fontStyle: FontStyle.italic,
@@ -143,7 +204,6 @@ class AnalysisResultsPage extends ConsumerWidget {
     );
   }
 
-  // Card para Recomendaciones
   Widget _buildRecommendationsCard(
     BuildContext context,
     AnalysisResult result,
@@ -163,7 +223,7 @@ class AnalysisResultsPage extends ConsumerWidget {
                 color: Theme.of(context).primaryColor,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Text(
               result.recomendacionPublica,
               style: const TextStyle(fontSize: 16, height: 1.4),
@@ -174,7 +234,6 @@ class AnalysisResultsPage extends ConsumerWidget {
     );
   }
 
-  // Card para Síntomas Reportados
   Widget _buildReportedSymptomsCard(
     BuildContext context,
     AnalysisResult result,
@@ -186,48 +245,26 @@ class AnalysisResultsPage extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Tus síntomas reportados:',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).primaryColor,
-              ),
+            const Text(
+              'Síntomas detectados:',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
-
+            const SizedBox(height: 8),
             Wrap(
               spacing: 8.0,
-              runSpacing: 4.0,
               children: result.sintomasReportados
                   .map(
-                    (sintoma) => Chip(
-                      label: Text(sintoma),
-                      backgroundColor: Colors.grey[200],
-                    ),
+                    (s) =>
+                        Chip(label: Text(s), backgroundColor: Colors.grey[200]),
                   )
                   .toList(),
             ),
-
-            if (result.textoOriginal.isNotEmpty &&
-                !result.sintomasReportados.contains(result.textoOriginal))
-              Padding(
-                padding: const EdgeInsets.only(top: 12.0),
-                child: Text(
-                  'Texto original: "${result.textoOriginal}"',
-                  style: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ),
           ],
         ),
       ),
     );
   }
 
-  // Helper para mapear el nivel de urgencia a un color y texto
   (String, MaterialColor) _getUrgencyInfo(String nivelUrgencia) {
     switch (nivelUrgencia.toLowerCase()) {
       case 'alto':
@@ -236,8 +273,6 @@ class AnalysisResultsPage extends ConsumerWidget {
       case 'media':
       case 'medio':
         return ('Urgencia Media', Colors.orange);
-      case 'bajo':
-      case 'baja':
       default:
         return ('Urgencia Baja', Colors.green);
     }

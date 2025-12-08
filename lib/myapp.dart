@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
       // Configuración de GoRouter
       routerConfig: appRouter,
 
-      title: 'JuntosXSalud',
+      title: 'SaludXChiapas',
       debugShowCheckedModeBanner: false,
 
       // Tema global de la aplicación
