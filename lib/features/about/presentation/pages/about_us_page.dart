@@ -1,4 +1,3 @@
-// lib/features/about/presentation/pages/about_us_page.dart
 import 'package:flutter/material.dart';
 
 class AboutUsPage extends StatelessWidget {
@@ -9,7 +8,10 @@ class AboutUsPage extends StatelessWidget {
     final Color primaryColor = Theme.of(context).primaryColor;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Sobre nosotros')),
+      appBar: AppBar(
+        title: const Text('Sobre nosotros'),
+        automaticallyImplyLeading: true,
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),

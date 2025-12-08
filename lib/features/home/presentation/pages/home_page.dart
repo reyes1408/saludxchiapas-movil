@@ -1,19 +1,35 @@
-// lib/features/home/presentation/pages/home_page.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // Importar Riverpod
 import 'package:go_router/go_router.dart';
+import 'package:saludxchiapas_frontend/features/auth/presentation/providers/auth_provider.dart'; // Importar AuthProvider
 
-class HomePage extends StatelessWidget {
+class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final Color primaryColor = Color(0xFF006A7A);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final Color primaryColor = const Color(0xFF006A7A);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('JuntosXSalud'),
+        title: const Text('SaludXChiapas'),
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
+        automaticallyImplyLeading: false,
+        actions: [
+          // BOTÓN DE CERRAR SESIÓN
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Cerrar sesión',
+            onPressed: () async {
+              await ref.read(authProvider.notifier).logout();
+
+              if (context.mounted) {
+                context.go('/');
+              }
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -44,7 +60,7 @@ class HomePage extends StatelessWidget {
                 buttonText: 'COMENZAR',
                 buttonColor: primaryColor,
                 onPressed: () {
-                  context.go('/symptom-checker');
+                  context.push('/symptom-checker');
                 },
               ),
               const SizedBox(height: 16),
@@ -54,7 +70,7 @@ class HomePage extends StatelessWidget {
                 title: 'Sobre nosotros',
                 linkText: 'Conoce más acerca de Puente Salud',
                 onPressed: () {
-                  context.go('/about');
+                  context.push('/about');
                 },
               ),
               const SizedBox(height: 16),
@@ -62,13 +78,12 @@ class HomePage extends StatelessWidget {
               // Card de Hospitales
               _buildLinkCard(
                 title: 'Hospitales públicos cercanos',
-                linkText:
-                    'Conoce más acerca de Puente Salud', // El texto es el mismo en la imagen
+                linkText: 'Ver lista de hospitales',
                 onPressed: () {
-                  // TODO: Navegar a "Hospitales"
+                  context.push('/hospitals');
                 },
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
               // Caja de Advertencia
               Container(
@@ -102,7 +117,6 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // Helper para las cards con botón
   Widget _buildInfoCard({
     required String title,
     required String subtitle,
@@ -112,7 +126,7 @@ class HomePage extends StatelessWidget {
   }) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -120,24 +134,25 @@ class HomePage extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               subtitle,
               style: const TextStyle(fontSize: 15, color: Colors.black54),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             ElevatedButton(
               onPressed: onPressed,
               style: ElevatedButton.styleFrom(
                 backgroundColor: buttonColor,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                padding: const EdgeInsets.symmetric(horizontal: 64.0),
               ),
-              child: Text(buttonText),
+              child: Text(buttonText, style: const TextStyle(fontSize: 15)),
             ),
           ],
         ),
@@ -145,7 +160,6 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // Helper para las cards con link
   Widget _buildLinkCard({
     required String title,
     required String linkText,
